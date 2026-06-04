@@ -1,0 +1,32 @@
+{
+  "memory": {
+    "count": 10,
+    "avg_edit_distance": 59.3,
+    "avg_normalized_edit_distance": 0.0113
+  },
+  "strategy_counts": {
+    "default": 10,
+    "verbose": 0,
+    "conservative": 0,
+    "structured": 0
+  },
+  "best_strategy": "default",
+  "total_iterations": 10,
+  "learned_substitution_rules": [
+    [
+      "INJ.",
+      "Injection",
+      28
+    ],
+    [
+      "TAB.",
+      "Tablet",
+      25
+    ],
+    [
+      "verification.*",
+      "verification. Reviewed by AI-assisted pipeline.*",
+      1
+    ]
+  ]
+}

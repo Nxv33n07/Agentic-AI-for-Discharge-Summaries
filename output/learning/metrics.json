@@ -1,0 +1,192 @@
+[
+  {
+    "iteration": 0,
+    "avg_ned": 0.03990576256216542,
+    "patients": [
+      {
+        "patient": "patient_001",
+        "iteration": 0,
+        "ned": 0.049820094104622195,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 0.908256880733945,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.925326695706285
+        }
+      },
+      {
+        "patient": "patient_002",
+        "iteration": 0,
+        "ned": 0.029991431019708654,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 0.9533527696793003,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9631284916201117
+        }
+      }
+    ]
+  },
+  {
+    "iteration": 1,
+    "avg_ned": 0.004191519199804761,
+    "patients": [
+      {
+        "patient": "patient_001",
+        "iteration": 1,
+        "ned": 0.005812344312205923,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9869321717485999
+        }
+      },
+      {
+        "patient": "patient_002",
+        "iteration": 1,
+        "ned": 0.002570694087403599,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9953072625698324
+        }
+      }
+    ]
+  },
+  {
+    "iteration": 2,
+    "avg_ned": 0.004191519199804761,
+    "patients": [
+      {
+        "patient": "patient_001",
+        "iteration": 2,
+        "ned": 0.005812344312205923,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9869321717485999
+        }
+      },
+      {
+        "patient": "patient_002",
+        "iteration": 2,
+        "ned": 0.002570694087403599,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9953072625698324
+        }
+      }
+    ]
+  },
+  {
+    "iteration": 3,
+    "avg_ned": 0.004191519199804761,
+    "patients": [
+      {
+        "patient": "patient_001",
+        "iteration": 3,
+        "ned": 0.005812344312205923,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9869321717485999
+        }
+      },
+      {
+        "patient": "patient_002",
+        "iteration": 3,
+        "ned": 0.002570694087403599,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9953072625698324
+        }
+      }
+    ]
+  },
+  {
+    "iteration": 4,
+    "avg_ned": 0.004191519199804761,
+    "patients": [
+      {
+        "patient": "patient_001",
+        "iteration": 4,
+        "ned": 0.005812344312205923,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9869321717485999
+        }
+      },
+      {
+        "patient": "patient_002",
+        "iteration": 4,
+        "ned": 0.002570694087403599,
+        "section_accuracy": {
+          "Patient Demographics": 1.0,
+          "Principal Diagnosis": 1.0,
+          "Secondary Diagnoses": 1.0,
+          "Hospital Course": 1.0,
+          "Discharge Medications": 1.0,
+          "Allergies": 1.0,
+          "Follow-Up Instructions": 1.0,
+          "Pending Results": 1.0,
+          "Discharge Condition": 0.9953072625698324
+        }
+      }
+    ]
+  }
+]

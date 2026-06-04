@@ -22,7 +22,7 @@ htmlcov/
 data/raw/pages/
 data/raw/ocr/
 *.pdf
-/output/
+/output/llm_cache/
 *.txt
 !requirements.txt
 
