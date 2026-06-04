@@ -1,0 +1,7 @@
+{
+  "/(pages)/drafts/page": "app/(pages)/drafts/page.js",
+  "/(pages)/trace/page": "app/(pages)/trace/page.js",
+  "/page": "app/page.js",
+  "/(pages)/patients/page": "app/(pages)/patients/page.js",
+  "/(pages)/learning/page": "app/(pages)/learning/page.js"
+}
