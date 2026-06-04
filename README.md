@@ -196,12 +196,21 @@ This UI serves as the practical environment where **Part 2's "Doctor Edits"** wo
 - **Patient Management**: Secure, accessible interface for managing patient documents and launching the agent.
 - **Modern Tech Stack**: Built with Next.js, Tailwind CSS, and Framer Motion for a premium, responsive experience.
 
-**To run the clinician web interface:**
+**To run the full stack (API + Web UI), you need two terminal tabs:**
+
+**Terminal 1: Start the Backend API**
+```bash
+uvicorn src.api.main:app --reload --port 8000
+```
+
+**Terminal 2: Start the Next.js Web UI**
 ```bash
 cd ui/web
 npm install
 npm run dev
 ```
+
+Then open **http://localhost:3000** in your browser.
 
 ## Requirements
 
