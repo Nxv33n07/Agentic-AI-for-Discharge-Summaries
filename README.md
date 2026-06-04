@@ -220,7 +220,7 @@ pip install -r requirements.txt
 
 # Set up API key (optional — mock LLM works without it)
 cp .env.template .env
-# Edit .env with your GEMINI_API_KEY
+# Edit .env with your GROQ_API_KEY or OPENROUTER_API_KEY
 ```
 
 ## Usage
