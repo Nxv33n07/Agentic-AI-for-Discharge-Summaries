@@ -5,7 +5,7 @@ data/raw/pages/
 data/raw/ocr/
 .venv/
 *.pdf
-output/
+/output/
 node_modules/
 *.txt
 !requirements.txt
