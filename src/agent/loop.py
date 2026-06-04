@@ -850,7 +850,7 @@ def _rule_extract_medications(text: str) -> list:
 
     # Parse discharge medication table (TAB./INJ. lines)
     discharge_section_m = re.search(
-        r'ADVICE ON DISCHARGE.*?\n(.+?)(?:\nFOLLOW|FOLLOW-UP|\Z)',
+        r'(?:ADVICE ON DISCHARGE|DISCHARGE MEDICATIONS).*?\n(.+?)(?:\nALLERGIES|\nFOLLOW|FOLLOW-UP|\Z)',
         text, re.DOTALL | re.IGNORECASE
     )
     if discharge_section_m:
