@@ -2,70 +2,183 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import fonts from design system */
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+/* Self-host Fira Code + Fira Sans via next/font (loaded in app/layout.tsx) */
 
-:root {
-  --background: #ECFEFF;
-  --foreground: #164E63;
-  --color-primary: #0891B2;
-  --color-secondary: #22D3EE;
-  --color-cta: #059669;
-  --color-text: #164E63;
-  --card: #FFFFFF;
-  --card-foreground: #164E63;
-  
-  /* Spacing */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-  --space-3xl: 64px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-  --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
-  
-  /* Border radius */
-  --radius-default: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0F172A; /* slate-900 */
-    --foreground: #F1F5F9; /* slate-50 */
-    --color-primary: #0891B2; /* Keep primary color for branding */
-    --color-secondary: #22D3EE; /* Keep secondary color */
-    --color-cta: #059669; /* Keep CTA color */
-    --color-text: #E2E8F0; /* slate-300 for better contrast on dark background */
-    --card: #1E293B; /* slate-800 */
-    --card-foreground: #F1F5F9; /* slate-50 */
+    /* === Dscribe Design System ===
+     * Calm cyan + health green. Per design-system/dscribe/MASTER.md.
+     * This is the LIGHT theme (default). Dark theme tokens below.
+     */
+    --background: #FFFFFF;
+    --foreground: #0E2A33;
+    /* near-black teal, 4.5:1+ on background */
+    --muted: #F5F9FA;
+    --muted-foreground: #4A6975;
+    --border: #DDE7EA;
+    --input: #DDE7EA;
+    --ring: #0891B2;
+    /* primary cyan as focus ring */
+
+    /* Brand palette (single accent lock, per taste-skill §4.2) */
+    --color-primary: #0891B2;
+    /* cyan-700: trust, links */
+    --color-primary-fg: #FFFFFF;
+    --color-secondary: #22D3EE;
+    /* cyan-400: soft accent */
+    --color-cta: #059669;
+    /* emerald-600: "Run Agent" */
+    --color-cta-fg: #FFFFFF;
+    --color-text: #164E63;
+    /* cyan-900: body text */
+
+    /* Status (used by MarkdownView status chips) */
+    --status-missing: #B91C1C;
+    --status-pending: #B45309;
+    --status-conflict: #C2410C;
+    --status-unclear: #A16207;
+    --status-not-documented: #475569;
+
+    /* Surfaces */
+    --card: #FFFFFF;
+    --card-foreground: #0E2A33;
+    --popover: #FFFFFF;
+    --popover-foreground: #0E2A33;
+
+    /* === Shape & motion (single radius scale, per taste-skill §4.4) === */
+    --radius-input: 8px;
+    /* inputs + buttons */
+    --radius-card: 12px;
+    /* cards */
+    --radius-sheet: 16px;
+    /* modals, popovers */
+    --radius-pill: 9999px;
+    /* chips, badges */
+
+    /* === Shadows tinted to background hue (no pure-black) === */
+    --shadow-sm: 0 1px 2px 0 rgba(8, 145, 178, 0.04);
+    --shadow-md: 0 4px 8px -1px rgba(8, 145, 178, 0.06), 0 2px 4px -2px rgba(8, 145, 178, 0.04);
+    --shadow-lg: 0 12px 20px -4px rgba(8, 145, 178, 0.08), 0 4px 8px -4px rgba(8, 145, 178, 0.05);
+    --shadow-focus: 0 0 0 3px rgba(8, 145, 178, 0.18);
+
+    /* === Spacing scale === */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+  }
+
+  /* === Dark mode (auto by prefers-color-scheme, per taste-skill §8) === */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #07151A;
+      --foreground: #E6F2F5;
+      --muted: #0E252C;
+      --muted-foreground: #8FAEB6;
+      --border: #1A3540;
+      --input: #1A3540;
+      --ring: #22D3EE;
+
+      --color-primary: #22D3EE;
+      /* brighter cyan for dark bg */
+      --color-primary-fg: #07151A;
+      --color-secondary: #67E8F9;
+      --color-cta: #10B981;
+      /* brighter emerald for dark */
+      --color-cta-fg: #07151A;
+      --color-text: #C5E5EC;
+
+      --status-missing: #F87171;
+      --status-pending: #FBBF24;
+      --status-conflict: #FB923C;
+      --status-unclear: #FACC15;
+      --status-not-documented: #94A3B8;
+
+      --card: #0E252C;
+      --card-foreground: #E6F2F5;
+      --popover: #0E252C;
+      --popover-foreground: #E6F2F5;
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 12px 20px -4px rgba(0, 0, 0, 0.5), 0 4px 8px -4px rgba(0, 0, 0, 0.4);
+      --shadow-focus: 0 0 0 3px rgba(34, 211, 238, 0.25);
+    }
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Fira Sans', Arial, Helvetica, sans-serif;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Fira Code', monospace;
-}
-
-/* Remove wildcard transition to prevent performance issues and Framer Motion conflicts */
-
-/* Respect user's preference for reduced motion */
-@media (prefers-reduced-motion: reduce) {
+@layer base {
   * {
+    border-color: var(--border);
+  }
+
+  body {
+    color: var(--foreground);
+    background: var(--background);
+    font-family: var(--font-fira-sans, 'Fira Sans'), system-ui, -apple-system, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-fira-code, 'Fira Code'), ui-monospace, monospace;
+    letter-spacing: -0.01em;
+  }
+
+  /* Single source of truth for the brand focus ring (a11y, taste-skill §4.5) */
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-input);
+  }
+}
+
+/* Page-level lock: respect prefers-reduced-motion (taste-skill §6.B) */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Subtle, calm background pattern for app shell — replaces the Aurora background.
+   Pure CSS, no JS, reduced-motion-friendly. */
+.app-shell-bg {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(8, 145, 178, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(5, 150, 105, 0.03) 0%, transparent 50%);
+}
+
+/* Soft pulse for the AnimatedDot. Animates opacity only (transform-safe). */
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@layer utilities {
+  .animate-pulse-soft {
+    animation: pulse-soft 2.2s ease-in-out infinite;
   }
 }

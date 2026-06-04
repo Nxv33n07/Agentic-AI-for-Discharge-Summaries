@@ -31,49 +31,42 @@ interface NedPoint {
     ned: number;
 }
 
-const FALLBACK_NED: NedPoint[] = [
-    { iteration: 1, ned: 0.0194 },
-    { iteration: 2, ned: 0.0074 },
-    { iteration: 3, ned: 0.0074 },
-    { iteration: 4, ned: 0.0074 },
-    { iteration: 5, ned: 0.0074 },
-];
-
 interface RuleRow {
     from: string;
     to: string;
     count: number;
 }
 
-const FALLBACK_RULES: RuleRow[] = [
-    {
-        from: "[MISSING — not found in source documents]",
-        to: "[Not documented]",
-        count: 1,
-    },
-    {
-        from: "verification.*",
-        to: "verification. Reviewed by AI-assisted pipeline.*",
-        count: 1,
-    },
-];
-
 export default function LearningPage() {
     const [stats, setStats] = useState<LearningStats | null>(null);
-    const [ned, setNed] = useState<NedPoint[]>(FALLBACK_NED);
-    const [rules, setRules] = useState<RuleRow[]>(FALLBACK_RULES);
+    const [ned, setNed] = useState<NedPoint[]>([]);
+    const [rules, setRules] = useState<RuleRow[]>([]);
     const [live, setLive] = useState(false);
 
     useEffect(() => {
         getLearningStats()
             .then((s) => {
                 if (!s) return;
-                setStats(s);
-                if (s.learned_substitution_rules?.length) {
-                    setRules(s.learned_substitution_rules);
+                const data = s as any;
+                setStats(data);
+                if (data.summary?.learned_substitution_rules?.length) {
+                    setRules(
+                        data.summary.learned_substitution_rules.map((r: any[]) => ({
+                            from: r[0],
+                            to: r[1],
+                            count: r[2],
+                        }))
+                    );
                 }
-                if (s.avg_normalized_edit_distance) {
-                    const avg = s.avg_normalized_edit_distance;
+                if (data.metrics && Array.isArray(data.metrics)) {
+                    setNed(
+                        data.metrics.map((m: any) => ({
+                            iteration: m.iteration + 1,
+                            ned: m.avg_ned,
+                        }))
+                    );
+                } else if (data.summary?.memory?.avg_normalized_edit_distance) {
+                    const avg = data.summary.memory.avg_normalized_edit_distance;
                     setNed([
                         { iteration: 1, ned: avg * 2.5 },
                         { iteration: 2, ned: avg * 1.3 },
@@ -88,6 +81,37 @@ export default function LearningPage() {
                 setLive(false);
             });
     }, []);
+
+    if (!live || ned.length === 0) {
+        return (
+            <div className="space-y-6" data-testid="learning-page">
+                <header className="flex flex-col gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Brain className="h-4 w-4 text-primary" aria-hidden="true" />
+                        <h1 className="text-2xl font-bold text-primary">Learning Loop</h1>
+                        <Badge variant="muted">No data</Badge>
+                    </div>
+                    <p className="text-sm text-foreground/70">
+                        Part 2: the agent learns from simulated clinician edits to reduce the Normalized Edit Distance (NED) on subsequent drafts.
+                    </p>
+                </header>
+                <Card>
+                    <CardContent className="p-8 text-center text-sm text-foreground/70">
+                        No learning data available. Run the Part 2 learning loop from your terminal to populate this dashboard.
+                    </CardContent>
+                </Card>
+                <Alert variant="default" icon={<Brain className="h-4 w-4" />}>
+                    <AlertTitle>How to reproduce</AlertTitle>
+                    <AlertDescription>
+                        Run Part 2 from the terminal with{" "}
+                        <code className="rounded bg-slate-100 px-1 font-mono text-xs">
+                            MOCK_LLM=1 .venv/bin/python -m src.main --part2 --patients patient_001 patient_002 --iterations 5
+                        </code>
+                    </AlertDescription>
+                </Alert>
+            </div>
+        );
+    }
 
     const firstNed = ned[0]?.ned ?? 0.02;
     const lastNed = ned[ned.length - 1]?.ned ?? 0.008;
@@ -123,11 +147,7 @@ export default function LearningPage() {
                     <h1 className="text-2xl font-bold text-primary">
                         Learning Loop
                     </h1>
-                    {live ? (
-                        <Badge variant="success">Live from API</Badge>
-                    ) : (
-                        <Badge variant="muted">Static fallback</Badge>
-                    )}
+                    <Badge variant="success">Live from API</Badge>
                 </div>
                 <p className="text-sm text-foreground/70">
                     Part 2: the agent learns from simulated clinician edits to
@@ -383,26 +403,6 @@ export default function LearningPage() {
                     </CardContent>
                 </Card>
             </div>
-
-            <Alert variant="info" icon={<Brain className="h-4 w-4" />}>
-                <AlertTitle>How to reproduce</AlertTitle>
-                <AlertDescription>
-                    Run Part 2 from the terminal with{" "}
-                    <code className="rounded bg-slate-100 px-1 font-mono text-xs">
-                        MOCK_LLM=1 .venv/bin/python -m src.main --part2
-                        --patients patient_001 patient_002 --iterations 5
-                    </code>
-                    . The full learning pipeline writes to{" "}
-                    <code className="rounded bg-slate-100 px-1 font-mono text-xs">
-                        output/learning/metrics.json
-                    </code>{" "}
-                    and{" "}
-                    <code className="rounded bg-slate-100 px-1 font-mono text-xs">
-                        output/learning/improver_summary.json
-                    </code>
-                    .
-                </AlertDescription>
-            </Alert>
 
             <div className="flex flex-wrap gap-3">
                 <Button asChild variant="cta">

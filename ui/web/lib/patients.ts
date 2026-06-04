@@ -12,7 +12,7 @@ export interface PatientInfo {
     gender?: string;
     admitted?: string;
     summary: string;
-    status: "ready" | "draft-available" | "running";
+    status: "ready" | "draft-available" | "running" | "admitted";
 }
 
 export const KNOWN_PATIENTS: PatientInfo[] = [
@@ -34,7 +34,7 @@ export const KNOWN_PATIENTS: PatientInfo[] = [
         admitted: "2026-02-26",
         summary:
             "Acute febrile illness with Type-II DM. Lab results, USG, ECHO present; no discharge summary page (still admitted).",
-        status: "ready",
+        status: "admitted",
     },
 ];
 

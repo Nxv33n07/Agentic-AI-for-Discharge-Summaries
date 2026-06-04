@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { GlowPulse } from "@/components/ui/glow-pulse";
 import { StaggerContainer, StaggerItem } from "@/components/layout/StaggerContainer";
 import { getTrace } from "@/lib/api";
 import type { TraceResponse, TraceStep } from "@/types/api";
@@ -258,7 +257,7 @@ export default function TraceDetailPage() {
                                                             </Badge>
                                                         )}
                                                         {s.tool && (
-                                                            <Badge variant="info">
+                                                            <Badge variant="default">
                                                                 <Wrench className="h-3 w-3" />
                                                                 {s.tool}
                                                             </Badge>

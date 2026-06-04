@@ -2,25 +2,54 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Dscribe Badge.
+ *
+ * Design rules followed:
+ *  - Single radius system: full pill (radius-pill = 9999px).
+ *  - Tinted background + tinted foreground, never a solid accent fill.
+ *  - Two sizes: sm (compact, inline) and default (table cells, status chips).
+ *  - Variants map to the same status taxonomy used in MarkdownView:
+ *    missing | pending | conflict | unclear | not-documented | info | success | neutral.
+ */
 const badgeVariants = cva(
-    "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1",
+    [
+        "inline-flex items-center gap-1 rounded-pill border px-2 py-0.5",
+        "text-[11px] font-medium leading-none",
+        "transition-colors duration-200",
+    ].join(" "),
     {
         variants: {
             variant: {
-                default: "border-transparent bg-primary text-white",
-                secondary: "border-transparent bg-secondary/30 text-primary",
-                success:
-                    "border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
-                warning:
-                    "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
-                danger: "border-transparent bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
-                info: "border-transparent bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
-                outline: "border-primary/30 text-primary bg-primary/5",
-                muted: "border-transparent bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+                // Default / info: cyan-tinted
+                default: "border-transparent bg-primary/10 text-primary",
+                // Success: emerald-tinted
+                success: "border-transparent bg-cta/10 text-cta",
+                // Warning: amber-tinted
+                warning: "border-transparent bg-status-pending/10 text-status-pending",
+                // Danger / missing: red-tinted
+                danger:
+                    "border-transparent bg-status-missing/10 text-status-missing",
+                // Conflict: orange-tinted
+                conflict:
+                    "border-transparent bg-status-conflict/10 text-status-conflict",
+                // Unclear: yellow-tinted
+                unclear:
+                    "border-transparent bg-status-unclear/10 text-status-unclear",
+                // Not documented: slate-tinted
+                muted: "border-transparent bg-muted text-muted-foreground",
+                // Outlined neutral
+                outline: "border-border text-foreground bg-background",
+            },
+            size: {
+                sm: "text-[10px] px-1.5 py-0",
+                default: "",
+                lg: "text-xs px-2.5 py-1",
             },
         },
         defaultVariants: {
             variant: "default",
+            size: "default",
         },
     }
 );
@@ -29,9 +58,12 @@ export interface BadgeProps
     extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> { }
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, variant, size, ...props }: BadgeProps) {
     return (
-        <div className={cn(badgeVariants({ variant }), className)} {...props} />
+        <div
+            className={cn(badgeVariants({ variant, size }), className)}
+            {...props}
+        />
     );
 }
 

@@ -3,6 +3,7 @@ import json
 import argparse
 from pathlib import Path
 from dotenv import load_dotenv
+from typing import Optional
 
 load_dotenv()
 
@@ -18,24 +19,73 @@ from openai import OpenAI
 DEFAULT_PATIENTS_DIR = "data/patients"
 
 
+# Per-provider model IDs. Model names differ between Groq and OpenRouter
+# (OpenRouter requires ``provider/model`` slugs). Override with env vars
+# (e.g. ``OPENROUTER_MODEL=meta-llama/llama-3.3-70b-instruct:free``).
+MODELS = {
+    # OpenRouter default (free tier). Override with OPENROUTER_MODEL.
+    "openrouter": os.getenv(
+        "OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free"
+    ),
+    # Groq default. Override with GROQ_MODEL.
+    "groq": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+}
+
+
+def active_provider() -> str:
+    """Return the provider whose credentials are present, or 'mock'.
+
+    Selection order: OPENROUTER_API_KEY → GROQ_API_KEY → mock.
+    """
+    if os.getenv("MOCK_LLM") == "1":
+        return "mock"
+    if os.getenv("GROQ_API_KEY"):
+        return "groq"
+    if os.getenv("OPENROUTER_API_KEY"):
+        return "openrouter"
+    return "mock"
+
+
+def get_model_name(provider: Optional[str] = None) -> str:
+    """Return the correct model ID for the active (or given) provider."""
+    provider = provider or active_provider()
+    return MODELS.get(provider, MODELS["openrouter"])
+
+
 def get_client():
+    """Return an OpenAI-compatible client for the active provider.
+
+    Selection order (first env var wins):
+        1. ``GROQ_API_KEY``        → Groq
+        2. ``OPENROUTER_API_KEY``  → OpenRouter
+        3. (none)                 → ``MOCK_LLM=1`` deterministic mock
+    """
     if os.getenv("MOCK_LLM") == "1":
         print("[INFO] MOCK_LLM=1 — using deterministic mock LLM (no API calls).")
         return None
 
-    # Prefer OpenRouter (allows access to free models)
-    openrouter_key = os.getenv("OPENROUTER_API_KEY")
-    if openrouter_key:
-        print("[LLM] Using OpenRouter")
-        os.environ["MOCK_LLM"] = "0"
-        return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
-
-    # Fallback: Groq (free tier, OpenAI-compatible)
+    # Prefer Groq (high rate limits, very fast)
     groq_key = os.getenv("GROQ_API_KEY")
     if groq_key:
-        print("[LLM] Using Groq llama-3.3-70b-versatile")
+        print(f"[LLM] Using Groq ({MODELS['groq']})")
         os.environ["MOCK_LLM"] = "0"
-        return OpenAI(base_url="https://api.groq.com/openai/v1", api_key=groq_key)
+        client = OpenAI(
+            base_url="https://api.groq.com/openai/v1", api_key=groq_key
+        )
+        client._dscribe_provider = "groq"  # type: ignore[attr-defined]
+        return client
+
+    # Fallback: OpenRouter (allows access to free models but rate limited)
+    openrouter_key = os.getenv("OPENROUTER_API_KEY")
+    if openrouter_key:
+        print(f"[LLM] Using OpenRouter ({MODELS['openrouter']})")
+        os.environ["MOCK_LLM"] = "0"
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1", api_key=openrouter_key
+        )
+        # Tag the client so downstream code can detect the provider.
+        client._dscribe_provider = "openrouter"  # type: ignore[attr-defined]
+        return client
 
     os.environ["MOCK_LLM"] = "1"
     print("[INFO] No API keys found (OPENROUTER_API_KEY or GROQ_API_KEY). Using mock LLM.")

@@ -2,28 +2,65 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Dscribe Button.
+ *
+ * Design rules followed (taste-skill §4.5):
+ *  - Solid fills, no gradient/glow.
+ *  - One radius (8px, from --radius-input) for every size.
+ *  - Hover: subtle color shift, NO layout shift (no translate/scale on hover).
+ *  - Active: -translate-y-[1px] tactile push (single 1px shift, instant).
+ *  - Focus: ring handled globally in globals.css :focus-visible.
+ *  - Min height 44px for default size (a11y touch target).
+ *  - Disabled = opacity 50 + pointer-events none (not cursor: not-allowed).
+ */
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer [&_svg]:size-4 [&_svg]:shrink-0",
+    [
+        // layout
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap",
+        // shape (single radius system)
+        "rounded-input",
+        // type
+        "text-sm font-medium",
+        // motion (transitions only on color/bg, never on transform except active)
+        "transition-colors duration-200",
+        // focus handled by globals
+        "focus-visible:outline-none",
+        // disabled
+        "disabled:pointer-events-none disabled:opacity-50",
+        // cursor
+        "cursor-pointer",
+        // icon sizing
+        "[&_svg]:size-4 [&_svg]:shrink-0",
+        // tactile active (no hover translate)
+        "active:translate-y-px",
+    ].join(" "),
     {
         variants: {
             variant: {
-                default:
-                    "bg-primary text-white hover:bg-primary/90 hover:-translate-y-0.5 shadow-sm hover:shadow-md",
-                cta: "bg-[var(--color-cta)] text-white hover:bg-[var(--color-cta)]/90 hover:-translate-y-0.5 shadow-sm hover:shadow-md",
-                destructive:
-                    "bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md",
-                outline:
-                    "border border-primary/30 bg-transparent text-primary hover:bg-primary/5 hover:border-primary/60",
+                // Solid brand CTA. Highest visual weight.
+                cta: "bg-cta text-cta-fg hover:bg-cta/90 shadow-sm",
+                // Primary brand action.
+                default: "bg-primary text-primary-fg hover:bg-primary/90",
+                // Subdued (e.g. secondary actions in a row).
                 secondary:
-                    "bg-secondary/20 text-primary hover:bg-secondary/30 border border-secondary/30",
-                ghost: "hover:bg-primary/5 text-foreground",
+                    "bg-muted text-foreground hover:bg-muted/80 border border-border",
+                // Outlined, for tertiary actions.
+                outline:
+                    "border border-border bg-background text-foreground hover:bg-muted",
+                // No chrome at all, for inline affordances.
+                ghost: "text-foreground hover:bg-muted",
+                // Destructive only for truly destructive actions (delete draft etc.).
+                destructive:
+                    "bg-status-missing text-white hover:bg-status-missing/90",
+                // Link-styled (for inline use).
                 link: "text-primary underline-offset-4 hover:underline",
             },
             size: {
-                default: "h-11 px-5 py-2",
-                sm: "h-9 rounded-md px-3 text-xs",
-                lg: "h-12 rounded-lg px-8 text-base",
-                icon: "h-10 w-10",
+                sm: "h-9 px-3 text-xs rounded-input",
+                default: "h-11 px-5 py-2",          // 44px touch target
+                lg: "h-12 px-6 text-base rounded-input",
+                icon: "h-10 w-10",                  // 40px (paired with sr-only label)
             },
         },
         defaultVariants: {

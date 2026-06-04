@@ -8,8 +8,43 @@ from pydantic import BaseModel, Field
 from src.agent.state import AgentState, Fact, FactStatus, MedicationChange, Conflict, PlanStep
 from src.tracing.trace import StepTrace
 
-GROQ_MODEL = "llama-3.3-70b-versatile"
-ANTHROPIC_MODEL = "claude-sonnet-4-6"
+# Per-provider model IDs. OpenRouter requires ``provider/model`` slugs while
+# Groq uses bare model names. ``get_llm_model(client)`` returns the right one
+# for the active provider (Groq vs OpenRouter).
+_GROQ_MODEL_GROQ = "llama-3.3-70b-versatile"
+_GROQ_MODEL_OPENROUTER = "meta-llama/llama-3.3-70b-instruct:free"
+ANTHROPIC_MODEL = "claude-sonnet-4-5"
+
+# Backwards-compat alias: older imports may still reference ``GROQ_MODEL``.
+# This evaluates to the OpenRouter default at import time; use
+# ``get_llm_model(client)`` at call time to get the right model for the
+# active provider.
+GROQ_MODEL = os.getenv("OPENROUTER_MODEL", _GROQ_MODEL_OPENROUTER)
+
+
+def _provider_of(client: Any) -> str:
+    """Return the provider name for ``client`` (set by ``get_client``)."""
+    if client is None:
+        # Heuristic: prefer OpenRouter if its key is set, else Groq, else mock.
+        if os.getenv("OPENROUTER_API_KEY"):
+            return "openrouter"
+        if os.getenv("GROQ_API_KEY"):
+            return "groq"
+        return "mock"
+    return getattr(client, "_dscribe_provider", "openrouter")
+
+
+def get_llm_model(client: Any = None) -> str:
+    """Return the model ID to use with the active client.
+
+    Override per-provider with env vars:
+        - ``OPENROUTER_MODEL``  (default: ``meta-llama/llama-3.3-70b-instruct:free``)
+        - ``GROQ_MODEL``        (default: ``llama-3.3-70b-versatile``)
+    """
+    provider = _provider_of(client)
+    if provider == "groq":
+        return os.getenv("GROQ_MODEL", _GROQ_MODEL_GROQ)
+    return os.getenv("OPENROUTER_MODEL", _GROQ_MODEL_OPENROUTER)
 
 
 # === ANTHROPIC LLM ADAPTER ===
@@ -360,7 +395,7 @@ def check_change_reason_via_llm(client: Any, drug_name: str, change_desc: str, t
     try:
         res = call_llm_with_retry(
             client=client,
-            model=GROQ_MODEL,
+            model=get_llm_model(client),
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             temperature=0.1
@@ -441,7 +476,7 @@ def planner_node(state: AgentState, client: Any, system_prompt: str) -> dict:
     try:
         res = cached_llm_call(
             client=client,
-            model=GROQ_MODEL,
+            model=get_llm_model(client),
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
@@ -607,7 +642,7 @@ def extract_medications_tool(client: Any, text: str, context: str) -> list[dict]
     )
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.1
@@ -679,7 +714,7 @@ def check_lab_status_tool(client: Any, lab_name: str, text: str) -> dict:
     )
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.1
@@ -955,7 +990,7 @@ def extract_demographics_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nExtract patient demographics. Return null for missing fields. Return JSON with keys: name, age, gender, mrn, address."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -968,7 +1003,7 @@ def extract_diagnoses_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nExtract diagnoses. Return JSON with keys: principal_diagnosis (string or null), secondary_diagnoses (list of strings)."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -981,7 +1016,7 @@ def extract_allergies_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nExtract allergies. Return JSON with keys: allergies (list of strings), is_missing_or_not_known (bool)."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -994,7 +1029,7 @@ def extract_dates_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nExtract admission and discharge dates. Return JSON with keys: admission_date (string or null), discharge_date (string or null)."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -1007,7 +1042,7 @@ def extract_hospital_course_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nSummarize clinical hospital course. Return JSON with key: summary (string or null)."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -1020,7 +1055,7 @@ def extract_procedures_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nExtract procedures. Return JSON with key: procedures (list of strings)."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -1033,7 +1068,7 @@ def extract_follow_up_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nExtract follow-up instructions. Return JSON with keys: instructions (list of strings), pending_results (list of strings)."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -1046,7 +1081,7 @@ def extract_discharge_condition_tool(client: Any, text: str) -> dict:
     prompt = f"RAW CLINICAL NOTES:\n{text}\n\nExtract patient discharge condition. Return JSON with key: condition (string or null)."
     res = call_llm_with_retry(
         client=client,
-        model=GROQ_MODEL,
+        model=get_llm_model(client),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -1118,7 +1153,7 @@ def verify_fact_with_llm(client: Any, fact_value: str, raw_text: str) -> FactVer
     try:
         res = call_llm_with_retry(
             client=client,
-            model=GROQ_MODEL,
+            model=get_llm_model(client),
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             temperature=0.0
@@ -1381,7 +1416,7 @@ def revalidate_section_with_llm(client: Any, section_name: str, section_content:
     try:
         res = call_llm_with_retry(
             client=client,
-            model=GROQ_MODEL,
+            model=get_llm_model(client),
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             temperature=0.0

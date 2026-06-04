@@ -46,31 +46,50 @@ function applyInline(text: string): string {
 }
 
 function highlightStatusMarkers(html: string): string {
-    const replacements: Array<[RegExp, string]> = [
-        [
-            /\[NOT DOCUMENTED\]/g,
-            '<span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.78em] text-slate-700">NOT DOCUMENTED</span>',
-        ],
-        [
-            /\[MISSING[^\]]*\]/g,
-            '<span class="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 font-mono text-[0.78em] text-red-700">$amp</span>',
-        ],
-        [
-            /\[PENDING\]/g,
-            '<span class="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 font-mono text-[0.78em] text-amber-800">PENDING</span>',
-        ],
-        [
-            /\[CONFLICT[^\]]*\]/g,
-            '<span class="inline-flex items-center rounded bg-orange-100 px-1.5 py-0.5 font-mono text-[0.78em] text-orange-800">$amp</span>',
-        ],
-        [
-            /\[UNCLEAR[^\]]*\]/g,
-            '<span class="inline-flex items-center rounded bg-yellow-100 px-1.5 py-0.5 font-mono text-[0.78em] text-yellow-800">$amp</span>',
-        ],
-    ];
-    for (const [re, cls] of replacements) {
-        html = html.replace(re, cls);
-    }
+    // Use a function replacer for the bracketed tokens so that matched content
+    // is rendered verbatim. The bracket text is already HTML-escaped earlier
+    // (escapeHtml ran before this), so we only need to inject the styling span.
+    const wrap = (label: string, cls: string) =>
+        `<span class="inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[0.78em] ${cls}">${label}</span>`;
+
+    const MISSING_CLS =
+        "bg-red-100 text-red-700";
+    const PENDING_CLS =
+        "bg-amber-100 text-amber-800";
+    const CONFLICT_CLS =
+        "bg-orange-100 text-orange-800";
+    const UNCLEAR_CLS =
+        "bg-yellow-100 text-yellow-800";
+    const NOT_DOC_CLS =
+        "bg-slate-100 text-slate-700";
+
+    // Strip surrounding brackets for the visible label, then show the full
+    // bracketed token as a tooltip so clinicians can see the original marker.
+    const strip = (s: string) => s.replace(/^\[/, "").replace(/\]$/, "").trim();
+
+    html = html.replace(
+        /\[NOT DOCUMENTED\]/g,
+        () => wrap("NOT DOCUMENTED", NOT_DOC_CLS)
+    );
+    html = html.replace(
+        /\[PENDING\]/g,
+        () => wrap("PENDING", PENDING_CLS)
+    );
+    html = html.replace(
+        /\[MISSING[^\]]*\]/g,
+        (m) =>
+            `<span title="${m}" class="inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[0.78em] ${MISSING_CLS}">${strip(m) || "MISSING"}</span>`
+    );
+    html = html.replace(
+        /\[CONFLICT[^\]]*\]/g,
+        (m) =>
+            `<span title="${m}" class="inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[0.78em] ${CONFLICT_CLS}">${strip(m) || "CONFLICT"}</span>`
+    );
+    html = html.replace(
+        /\[UNCLEAR[^\]]*\]/g,
+        (m) =>
+            `<span title="${m}" class="inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[0.78em] ${UNCLEAR_CLS}">${strip(m) || "UNCLEAR"}</span>`
+    );
     return html;
 }
 

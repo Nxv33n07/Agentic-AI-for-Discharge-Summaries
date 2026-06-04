@@ -9,8 +9,12 @@ import {
     Download,
     FileText,
     RefreshCw,
+    TriangleAlert,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +27,19 @@ import MarkdownView from "@/components/markdown/MarkdownView";
 import { getDraft } from "@/lib/api";
 import { getPatientInfo, KNOWN_PATIENTS } from "@/lib/patients";
 
+/**
+ * Discharge Summary page (the page shown in the original screenshot).
+ *
+ * Design rules followed:
+ *  - No AuroraBackground, no GridPattern, no SpotlightCard, no ShimmerButton.
+ *  - Status communicated with a single Banner above the draft (not a paper
+ *    confetti, not a glow).
+ *  - Buttons: solid fills, calm.
+ *  - Single accent color throughout.
+ *  - Honest empty / loading / error states.
+ *  - No "V0.6 / BETA" or similar version-label hero (per taste-skill §9.F).
+ *  - No em-dashes anywhere (per taste-skill §9.G).
+ */
 export default function DraftDetailPage() {
     const params = useParams<{ patientId: string }>();
     const router = useRouter();
@@ -80,12 +97,12 @@ export default function DraftDetailPage() {
 
     if (!valid) {
         return (
-            <Card>
+            <Card className="max-w-lg mx-auto mt-12">
                 <CardContent className="p-8 text-center">
-                    <p className="text-sm text-foreground/70">
+                    <p className="text-sm text-muted-foreground">
                         Unknown patient id: {patientId}
                     </p>
-                    <Button asChild className="mt-3" variant="outline">
+                    <Button asChild className="mt-4" variant="outline">
                         <Link href="/drafts">Back to drafts</Link>
                     </Button>
                 </CardContent>
@@ -95,6 +112,7 @@ export default function DraftDetailPage() {
 
     return (
         <div className="space-y-6" data-testid="draft-detail">
+            {/* Page header */}
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-3">
                     <Button
@@ -112,12 +130,14 @@ export default function DraftDetailPage() {
                                 className="h-4 w-4 text-primary"
                                 aria-hidden="true"
                             />
-                            <h1 className="text-2xl font-bold text-primary">
+                            <h1 className="text-xl font-semibold text-foreground">
                                 {info?.name ?? patientId}
                             </h1>
-                            <Badge variant="outline">{patientId}</Badge>
+                            <Badge variant="outline" size="sm">
+                                {patientId}
+                            </Badge>
                         </div>
-                        <p className="text-sm text-foreground/60">
+                        <p className="text-sm text-muted-foreground">
                             Discharge summary draft
                         </p>
                     </div>
@@ -158,8 +178,9 @@ export default function DraftDetailPage() {
                 </div>
             </div>
 
+            {/* Error state */}
             {error && (
-                <Alert variant="danger">
+                <Alert variant="danger" icon={<TriangleAlert className="h-4 w-4" />}>
                     <AlertTitle>Could not load draft</AlertTitle>
                     <AlertDescription>
                         {error}. Run the agent from the{" "}
@@ -174,15 +195,18 @@ export default function DraftDetailPage() {
                 </Alert>
             )}
 
+            {/* Loading skeleton (matches the final draft shape, per taste-skill §4.5) */}
             {loading && !draft && !error && (
-                <div className="space-y-2">
-                    <Skeleton className="h-6 w-2/3" />
+                <div className="space-y-3">
+                    <Skeleton className="h-8 w-2/3" />
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-5/6" />
                     <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-32 w-full" />
                 </div>
             )}
 
+            {/* Draft */}
             {draft && <MarkdownView content={draft} />}
         </div>
     );

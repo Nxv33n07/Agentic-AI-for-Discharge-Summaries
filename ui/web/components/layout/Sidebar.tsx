@@ -2,21 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import {
     Activity,
     LayoutDashboard,
     Users,
     FileText,
     ShieldCheck,
-    ChevronLeft,
-    ChevronRight,
     Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 
+/**
+ * Sidebar.
+ *
+ * Design rules followed:
+ *  - Single line at desktop (5 nav items, 256px wide), no wrapping.
+ *  - Height 100dvh (not h-screen, banned by taste-skill §3.E).
+ *  - No decorative colored dot on the active item (banned by §9.F, dots are
+ *    reserved for real semantic state). The active state is communicated by:
+ *      1) tinted background (bg-primary/10)
+ *      2) primary-colored label
+ *      3) 2px left accent border (semantic, not decorative)
+ *  - Single accent color throughout (the brand cyan).
+ *  - No "Agentic AI" tagline micro-meta under the logo (§9.F: "Brand · No. 01"
+ *    style sub-eyebrows are banned).
+ *  - Footer version stamp kept short and functional.
+ */
 const NAV_ITEMS = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/patients", label: "Patients", icon: Users },
@@ -27,7 +38,6 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const [collapsed, setCollapsed] = useState(false);
 
     const isActive = (href: string) => {
         if (href === "/") return pathname === "/";
@@ -38,32 +48,28 @@ export default function Sidebar() {
         <aside
             aria-label="Primary"
             data-testid="app-sidebar"
-            className={cn(
-                "sticky top-0 hidden md:flex h-screen flex-col border-r border-primary/10 bg-card transition-[width] duration-300 ease-in-out",
-                collapsed ? "w-[72px]" : "w-64"
-            )}
+            className="sticky top-0 hidden md:flex w-64 shrink-0 flex-col border-r border-border bg-card min-h-[100dvh]"
         >
-            {/* Logo */}
-            <div className="flex h-16 items-center gap-3 px-4 border-b border-primary/10">
+            {/* Logo / brand */}
+            <Link
+                href="/"
+                className="flex h-16 items-center gap-3 px-5 border-b border-border focus-visible:outline-none"
+                aria-label="Dscribe home"
+            >
                 <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-input bg-primary text-primary-fg"
                     aria-hidden="true"
                 >
                     <Stethoscope className="h-5 w-5" />
                 </div>
-                {!collapsed && (
-                    <div className="flex flex-col leading-tight">
-                        <span className="text-sm font-semibold text-primary">
-                            Dscribe
-                        </span>
-                        <span className="text-[10px] uppercase tracking-wider text-foreground/50">
-                            Agentic AI
-                        </span>
-                    </div>
-                )}
-            </div>
+                <div className="flex flex-col leading-tight">
+                    <span className="text-sm font-semibold text-foreground">
+                        Dscribe
+                    </span>
+                </div>
+            </Link>
 
-            {/* Navigation */}
+            {/* Primary navigation (one line, single accent) */}
             <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Sidebar">
                 {NAV_ITEMS.map((item) => {
                     const Icon = item.icon;
@@ -74,67 +80,38 @@ export default function Sidebar() {
                             href={item.href}
                             aria-current={active ? "page" : undefined}
                             className={cn(
-                                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-200",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                                "group flex items-center gap-3 rounded-input px-3 py-2.5 text-sm font-medium",
+                                "transition-colors duration-200",
+                                "focus-visible:outline-none",
                                 active
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-foreground/70 hover:bg-primary/5 hover:text-foreground"
+                                    ? "bg-primary/10 text-primary border-l-2 border-primary pl-[10px]"
+                                    : "text-muted-foreground hover:bg-muted hover:text-foreground border-l-2 border-transparent pl-[10px]"
                             )}
                         >
                             <Icon
                                 className={cn(
                                     "h-4 w-4 shrink-0",
-                                    active && "text-primary"
+                                    active
+                                        ? "text-primary"
+                                        : "text-muted-foreground group-hover:text-foreground"
                                 )}
                                 aria-hidden="true"
                             />
-                            {!collapsed && (
-                                <span className="truncate">{item.label}</span>
-                            )}
-                            {active && !collapsed && (
-                                <span
-                                    aria-hidden="true"
-                                    className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"
-                                />
-                            )}
+                            <span className="truncate">{item.label}</span>
                         </Link>
                     );
                 })}
             </nav>
 
-            <Separator />
-
-            {/* Footer / toggle */}
-            <div className="p-3 space-y-3">
-                {!collapsed && (
-                    <div className="rounded-md bg-primary/5 p-3 text-[11px] leading-relaxed text-foreground/70">
-                        <p className="font-semibold text-foreground/80 mb-1">
-                            v0.1.0 · Preview
-                        </p>
-                        <p>
-                            All drafts require clinician verification. No clinical
-                            content is auto-released.
-                        </p>
-                    </div>
-                )}
-                <button
-                    type="button"
-                    onClick={() => setCollapsed((c) => !c)}
-                    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    className={cn(
-                        "flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium",
-                        "text-foreground/60 hover:bg-primary/5 hover:text-foreground",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                        "transition-colors duration-200"
-                    )}
-                >
-                    {collapsed ? (
-                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                    )}
-                    {!collapsed && <span>Collapse</span>}
-                </button>
+            {/* Footer: short, functional, no decorative copy */}
+            <div className="border-t border-border p-4">
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    v0.1.0 · Preview
+                </p>
+                <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">
+                    Drafts require clinician verification. No clinical
+                    content is auto-released.
+                </p>
             </div>
         </aside>
     );

@@ -21,9 +21,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Confetti } from "@/components/ui/confetti";
-import { GlowPulse } from "@/components/ui/glow-pulse";
+import { Input } from "@/components/ui/input";
+import { AnimatedDot } from "@/components/ui/animated-dot";
 import { StaggerContainer, StaggerItem } from "@/components/layout/StaggerContainer";
 import { KNOWN_PATIENTS, getPatientInfo } from "@/lib/patients";
 import { useAgentRun } from "@/lib/useAgentRun";
@@ -31,7 +30,7 @@ import { useAgentRun } from "@/lib/useAgentRun";
 export default function PatientsPage() {
     const [patientId, setPatientId] = useState<string>(KNOWN_PATIENTS[0].id);
     const [enableLearning, setEnableLearning] = useState<boolean>(false);
-    const [confettiKey, setConfettiKey] = useState(0);
+
     const successCardRef = useRef<HTMLDivElement | null>(null);
     const { status, error, result, run } = useAgentRun();
 
@@ -41,7 +40,7 @@ export default function PatientsPage() {
     const onRun = async () => {
         try {
             await run(patientId);
-            setConfettiKey((k) => k + 1);
+
         } catch {
             // surfaced via status/error
         }
@@ -60,7 +59,7 @@ export default function PatientsPage() {
                     </h1>
                     {running && (
                         <span className="ml-2 inline-flex items-center gap-1.5 text-xs text-foreground/60">
-                            <GlowPulse color="primary" />
+                            <AnimatedDot status="checking" />
                             Agent is reasoning...
                         </span>
                     )}
@@ -81,21 +80,14 @@ export default function PatientsPage() {
                     </CardHeader>
                     <CardContent className="space-y-5">
                         <div className="space-y-2">
-                            <Label htmlFor="patient-select">Patient</Label>
-                            <Select
-                                id="patient-select"
+                            <Label htmlFor="patient-input">Patient ID</Label>
+                            <Input
+                                id="patient-input"
                                 value={patientId}
-                                onChange={(e) =>
-                                    setPatientId(e.target.value)
-                                }
+                                onChange={(e) => setPatientId(e.target.value)}
                                 disabled={running}
-                            >
-                                {KNOWN_PATIENTS.map((p) => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.name} - {p.id}
-                                    </option>
-                                ))}
-                            </Select>
+                                placeholder="Enter patient ID (e.g., patient_001)"
+                            />
                         </div>
 
                         <div className="space-y-2">
@@ -152,9 +144,6 @@ export default function PatientsPage() {
                         >
                             {status === "success" && result && (
                                 <>
-                                    <Confetti
-                                        seed={`patient-${result.patientId}-${confettiKey}`}
-                                    />
                                     <Alert
                                         variant="success"
                                         icon={
@@ -173,7 +162,7 @@ export default function PatientsPage() {
                                                         href={`/drafts/${result.patientId}`}
                                                         className="flex items-center gap-1"
                                                     >
-                                                        View draft
+                                                        Review draft
                                                         <ArrowRight className="h-3.5 w-3.5" />
                                                     </Link>
                                                 </Button>
@@ -260,7 +249,7 @@ export default function PatientsPage() {
                                 </StaggerItem>
                                 <StaggerItem>
                                     <div className="flex flex-wrap gap-2">
-                                        <Badge variant="info">
+                                        <Badge variant="default">
                                             Source: clinical PDF
                                         </Badge>
                                         <Badge variant="outline">
@@ -274,7 +263,8 @@ export default function PatientsPage() {
                             </StaggerContainer>
                         ) : (
                             <p className="text-sm text-foreground/60">
-                                Select a patient to view details.
+                                Using custom patient ID: <strong>{patientId}</strong>.
+                                Make sure the required files exist in the backend.
                             </p>
                         )}
                     </CardContent>

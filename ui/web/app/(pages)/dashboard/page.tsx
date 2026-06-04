@@ -23,17 +23,12 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { ProgressArc } from "@/components/ui/progress-arc";
-import { GlowPulse } from "@/components/ui/glow-pulse";
-import { Marquee } from "@/components/ui/marquee";
-import { GridPattern } from "@/components/ui/grid-pattern";
-import { AuroraBackground } from "@/components/ui/aurora-background";
-import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { AnimatedDot } from "@/components/ui/animated-dot";
+import { Button } from "@/components/ui/button";
 import { StaggerContainer, StaggerItem } from "@/components/layout/StaggerContainer";
-import { checkHealth } from "@/lib/api";
+import { checkHealth, getDraft } from "@/lib/api";
 import { KNOWN_PATIENTS } from "@/lib/patients";
 
 const STAT_CARDS = [
@@ -127,24 +122,34 @@ const fadeUp = {
 export default function DashboardPage() {
     const [apiOnline, setApiOnline] = useState<boolean | null>(null);
 
+    const [patients, setPatients] = useState(KNOWN_PATIENTS);
+
     useEffect(() => {
         checkHealth()
-            .then((r) => setApiOnline(r.status === "healthy"))
+            .then(() => setApiOnline(true))
             .catch(() => setApiOnline(false));
+
+        Promise.all(
+            KNOWN_PATIENTS.map(async (p) => {
+                try {
+                    await getDraft(p.id);
+                    return { ...p, status: "draft-available" as const };
+                } catch {
+                    return p;
+                }
+            })
+        ).then(setPatients);
     }, []);
 
     return (
         <div className="space-y-8" data-testid="dashboard-page">
             {/* ============================== HERO ============================== */}
             <motion.section
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="relative overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-white/85 via-white/65 to-primary/5 shadow-sm"
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="relative overflow-hidden rounded-card border border-border bg-card shadow-sm"
             >
-                {/* Layered animated backgrounds */}
-                <AuroraBackground />
-                <GridPattern />
 
                 {/* Decorative floating icons */}
                 <motion.div
@@ -175,7 +180,7 @@ export default function DashboardPage() {
                                 variants={fadeUp}
                                 className="flex flex-wrap items-center gap-2"
                             >
-                                <Badge variant="info">Healthcare · v0.1</Badge>
+                                <Badge variant="default">Healthcare · v0.1</Badge>
                                 <Badge
                                     variant={
                                         apiOnline === false
@@ -186,13 +191,13 @@ export default function DashboardPage() {
                                     }
                                     className="gap-1.5"
                                 >
-                                    <GlowPulse
-                                        color={
+                                    <AnimatedDot
+                                        status={
                                             apiOnline === false
-                                                ? "danger"
+                                                ? "offline"
                                                 : apiOnline
-                                                    ? "success"
-                                                    : "warning"
+                                                    ? "live"
+                                                    : "checking"
                                         }
                                     />
                                     {apiOnline === null
@@ -207,26 +212,18 @@ export default function DashboardPage() {
                                 </Badge>
                             </motion.div>
 
-                            {/* Animated gradient headline */}
+                            {/* Headline */}
                             <motion.h1
                                 custom={1}
                                 initial="hidden"
                                 animate="show"
                                 variants={fadeUp}
-                                className="text-4xl font-bold leading-[1.05] md:text-5xl lg:text-6xl"
+                                className="text-3xl font-bold leading-tight md:text-4xl lg:text-5xl text-foreground"
                             >
-                                <AnimatedGradientText>
-                                    Agentic Discharge
-                                </AnimatedGradientText>
+                                <span>Agentic Discharge</span>
                                 <br />
-                                <span className="text-foreground">Summaries, </span>
-                                <AnimatedGradientText
-                                    from="#059669"
-                                    via="#0891B2"
-                                    to="#22D3EE"
-                                >
-                                    drafted safely.
-                                </AnimatedGradientText>
+                                <span>Summaries, </span>
+                                <span className="text-primary">drafted safely.</span>
                             </motion.h1>
 
                             {/* Sub */}
@@ -252,20 +249,19 @@ export default function DashboardPage() {
                                 variants={fadeUp}
                                 className="flex flex-wrap gap-3 pt-1"
                             >
-                                <ShimmerButton
-                                    href="/patients"
-                                    icon={<Zap className="h-4 w-4" />}
-                                    iconRight={<ArrowRight className="h-4 w-4" />}
-                                >
-                                    Start an Agent Run
-                                </ShimmerButton>
-                                <ShimmerButton
-                                    href="/learning"
-                                    variant="ghost"
-                                    icon={<Brain className="h-4 w-4" />}
-                                >
-                                    View Learning Loop
-                                </ShimmerButton>
+                                <Button asChild variant="cta" size="lg" className="gap-2">
+                                    <Link href="/patients">
+                                        <Zap className="h-4 w-4" />
+                                        Start an Agent Run
+                                        <ArrowRight className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="outline" size="lg" className="gap-2">
+                                    <Link href="/learning">
+                                        <Brain className="h-4 w-4" />
+                                        View Learning Loop
+                                    </Link>
+                                </Button>
                             </motion.div>
                         </div>
 
@@ -294,25 +290,7 @@ export default function DashboardPage() {
                 </div>
             </motion.section>
 
-            {/* ============================== GUARD MARKERS MARQUEE ============================== */}
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="rounded-xl border border-primary/10 bg-white/70 backdrop-blur"
-            >
-                <div className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider text-foreground/60">
-                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                    Guard markers the agent emits when it refuses to invent
-                </div>
-                <Marquee className="px-4">
-                    {GUARD_MARKERS.map((g) => (
-                        <Badge key={g} variant="outline" className="font-mono">
-                            {g}
-                        </Badge>
-                    ))}
-                </Marquee>
-            </motion.div>
+
 
             {/* ============================== STATS ============================== */}
             <StaggerContainer className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -364,20 +342,20 @@ export default function DashboardPage() {
                                 transition={{ duration: 0.2, ease: "easeOut" }}
                                 className="h-full"
                             >
-                                <SpotlightCard
-                                    className="h-full border-primary/15"
-                                    spotlightColor="rgba(8, 145, 178, 0.18)"
+                                <Card
+                                    className="h-full"
+                                    interactive
                                 >
                                     <div className="p-5">
                                         <div className="mb-3 flex items-center gap-2">
-                                            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                            <span className="flex h-9 w-9 items-center justify-center rounded-input bg-primary/10 text-primary">
                                                 <Icon className="h-4 w-4" />
                                             </span>
                                             <h3 className="text-base font-semibold text-foreground">
                                                 {f.title}
                                             </h3>
                                         </div>
-                                        <p className="text-sm leading-relaxed text-foreground/75">
+                                        <p className="text-sm leading-relaxed text-muted-foreground">
                                             {f.description}
                                         </p>
                                         <Link
@@ -388,7 +366,7 @@ export default function DashboardPage() {
                                             <ArrowRight className="h-3.5 w-3.5" />
                                         </Link>
                                     </div>
-                                </SpotlightCard>
+                                </Card>
                             </motion.div>
                         </StaggerItem>
                     );
@@ -409,7 +387,7 @@ export default function DashboardPage() {
                     </Link>
                 </div>
                 <StaggerContainer className="grid gap-3 md:grid-cols-2">
-                    {KNOWN_PATIENTS.map((p) => (
+                    {patients.map((p) => (
                         <StaggerItem key={p.id}>
                             <motion.div
                                 whileHover={{ y: -3, scale: 1.01 }}
@@ -444,33 +422,6 @@ export default function DashboardPage() {
                     ))}
                 </StaggerContainer>
             </section>
-
-            {/* ============================== REQUIREMENTS ============================== */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                        Assignment requirements — all met
-                    </CardTitle>
-                    <CardDescription>
-                        Hard requirements from the take-home spec, surfaced
-                        in the UI for transparency.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                        {REQUIREMENT_HIGHLIGHTS.map((r) => (
-                            <li
-                                key={r.label}
-                                className="flex items-center gap-2 text-sm text-foreground/85"
-                            >
-                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                                {r.label}
-                            </li>
-                        ))}
-                    </ul>
-                </CardContent>
-            </Card>
         </div>
     );
 }
