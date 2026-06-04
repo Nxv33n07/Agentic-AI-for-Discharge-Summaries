@@ -8,4 +8,5 @@ data/raw/ocr/
 output/
 node_modules/
 *.txt
+!requirements.txt
 dist/
